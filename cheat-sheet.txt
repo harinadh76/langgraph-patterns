@@ -1,0 +1,51 @@
+┌─────────────────────────────────────────────────────────────────┐
+│                 LANGGRAPH CHEAT SHEET                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  IMPORTS:                                                        │
+│  ────────                                                        │
+│  from langgraph.graph import StateGraph, START, END             │
+│  from typing import TypedDict, Annotated, Literal               │
+│  import operator                                                 │
+│                                                                  │
+│  STATE DEFINITION:                                               │
+│  ─────────────────                                               │
+│  class MyState(TypedDict):                                      │
+│      field1: str                    # Gets replaced             │
+│      field2: Annotated[list, operator.add]  # Accumulates       │
+│                                                                  │
+│  NODE FUNCTION:                                                  │
+│  ──────────────                                                  │
+│  def my_node(state: MyState) -> dict:                           │
+│      # Do something                                              │
+│      return {"field1": "new_value"}                             │
+│                                                                  │
+│  ROUTING FUNCTION:                                               │
+│  ─────────────────                                               │
+│  def router(state: MyState) -> Literal["node_a", "node_b"]:    │
+│      if some_condition:                                          │
+│          return "node_a"                                         │
+│      return "node_b"                                             │
+│                                                                  │
+│  BUILD GRAPH:                                                    │
+│  ────────────                                                    │
+│  graph_builder = StateGraph(MyState)                            │
+│  graph_builder.add_node("name", function)                       │
+│  graph_builder.add_edge(START, "first_node")                    │
+│  graph_builder.add_edge("node_a", "node_b")                     │
+│  graph_builder.add_conditional_edges("node", router, {...})     │
+│  graph_builder.add_edge("last_node", END)                       │
+│  graph = graph_builder.compile()                                 │
+│                                                                  │
+│  RUN GRAPH:                                                      │
+│  ──────────                                                      │
+│  result = graph.invoke(initial_state)                           │
+│                                                                  │
+│  PATTERNS:                                                       │
+│  ─────────                                                       │
+│  Sequential:   A ──▶ B ──▶ C                                    │
+│  Branching:    A ──┬▶ B ──┬▶ D                                  │
+│                    └▶ C ──┘                                      │
+│  Loop:         A ──▶ B ──▶ A (via conditional)                  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
